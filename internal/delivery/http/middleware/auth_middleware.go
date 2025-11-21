@@ -16,7 +16,12 @@ func AuthMiddleware(userUC usecase.UserUseCase, config *viper.Viper) echo.Middle
 	jwtMw := echojwt.WithConfig(echojwt.Config{
 		SigningKey: []byte(config.GetString("JWT_SECRET")),
 		ErrorHandler: func(ctx echo.Context, err error) error {
-			return echo.NewHTTPError(http.StatusUnauthorized, "Invalid or expired token.").SetInternal(err)
+			auth := ctx.Request().Header.Get("Authorization")
+			if auth == "" {
+				return echo.ErrUnauthorized
+			}
+
+			return echo.NewHTTPError(http.StatusUnauthorized, "Invalid or expired token").SetInternal(err)
 		},
 		SigningMethod: jwt.SigningMethodHS256.Alg(),
 		NewClaimsFunc: func(c echo.Context) jwt.Claims {
@@ -28,12 +33,12 @@ func AuthMiddleware(userUC usecase.UserUseCase, config *viper.Viper) echo.Middle
 		return jwtMw(func(ctx echo.Context) (err error) {
 			userToken, ok := ctx.Get("user").(*jwt.Token)
 			if !ok {
-				return echo.NewHTTPError(http.StatusUnauthorized, "Invlid or expired token").SetInternal(err)
+				return echo.NewHTTPError(http.StatusUnauthorized, "Invalid or expired token").SetInternal(err)
 			}
 
 			claims, ok := userToken.Claims.(*jwtService.MapClaims)
 			if !ok {
-				return echo.NewHTTPError(http.StatusUnauthorized, "Invlid or expired token").SetInternal(err)
+				return echo.NewHTTPError(http.StatusUnauthorized, "Invalid or expired token").SetInternal(err)
 			}
 
 			user, err := userUC.GetUser(ctx.Request().Context(), claims.UserId)
