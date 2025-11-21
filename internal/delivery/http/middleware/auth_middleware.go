@@ -41,7 +41,7 @@ func AuthMiddleware(userUC usecase.UserUseCase, config *viper.Viper) echo.Middle
 				return echo.NewHTTPError(http.StatusUnauthorized, "Invalid or expired token").SetInternal(err)
 			}
 
-			user, err := userUC.GetUser(ctx.Request().Context(), claims.UserId)
+			user, err := userUC.GetUserById(ctx.Request().Context(), claims.UserId)
 			if err != nil {
 				return echo.NewHTTPError(http.StatusUnauthorized, "Invlid or expired token").SetInternal(err)
 			}

@@ -9,6 +9,8 @@ import (
 
 type RefreshTokenRepository interface {
 	Create(db *gorm.DB, token *entity.RefreshToken) error
+	FindByToken(db *gorm.DB, tokenStr string) (*entity.RefreshToken, error)
+	Delete(db *gorm.DB, token *entity.RefreshToken) error
 }
 
 type RefreshTokenRepositoryImpl struct {
@@ -23,6 +25,23 @@ func NewRefreshTokenRepository(log *logrus.Logger) RefreshTokenRepository {
 
 func (r *RefreshTokenRepositoryImpl) Create(db *gorm.DB, token *entity.RefreshToken) error {
 	if err := db.Create(token).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *RefreshTokenRepositoryImpl) FindByToken(db *gorm.DB, tokenStr string) (*entity.RefreshToken, error) {
+	var refresh entity.RefreshToken
+	if err := db.Where("token = ?", tokenStr).First(&refresh).Error; err != nil {
+		return nil, err
+	}
+
+	return &refresh, nil
+}
+
+func (r *RefreshTokenRepositoryImpl) Delete(db *gorm.DB, token *entity.RefreshToken) error {
+	if err := db.Delete(token).Error; err != nil {
 		return err
 	}
 

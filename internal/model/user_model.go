@@ -16,11 +16,6 @@ type TokenResponse struct {
 	Token string `json:"token"`
 }
 
-type LoginOutput struct {
-	AccessToken  string               `json:"access_token"`
-	RefreshToken RefreshTokenResponse `json:"refresh_token"`
-}
-
 type LoginUserRequest struct {
 	Username string `json:"username" validate:"required,min=2,max=100"`
 	Password string `json:"password" validate:"required"`

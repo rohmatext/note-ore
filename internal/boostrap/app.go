@@ -1,6 +1,7 @@
 package boostrap
 
 import (
+	dHttp "rohmatext/ore-note/internal/delivery/http"
 	"rohmatext/ore-note/internal/delivery/http/handler"
 	"rohmatext/ore-note/internal/delivery/http/middleware"
 	"rohmatext/ore-note/internal/delivery/http/route"
@@ -24,13 +25,15 @@ type BootstrapConfig struct {
 func (cfg *BootstrapConfig) Bootstrap() *echo.Echo {
 	tokenService := jwt.NewJWTService(cfg.Config.GetString("JWT_SECRET"))
 
+	cookieService := &dHttp.CookieService{}
+
 	userRepository := repository.NewUserRepository(cfg.Log)
 	refreshTokenRepository := repository.NewRefreshTokenRepository(cfg.Log)
 
 	userUseCase := usecase.NewUserUseCase(cfg.DB, cfg.Log, refreshTokenRepository, userRepository, tokenService)
 	refreshTokenUseCase := usecase.NewRefreshTokenUseCase(cfg.DB, cfg.Log, refreshTokenRepository)
 
-	authHandler := handler.NewAuthHandler(cfg.Log, userUseCase, refreshTokenUseCase)
+	authHandler := handler.NewAuthHandler(cfg.Log, cookieService, userUseCase, refreshTokenUseCase)
 	userHandler := handler.NewUserHandler(cfg.Log, userUseCase)
 
 	routeConfig := route.RouteConfig{

@@ -22,6 +22,7 @@ func (r *RouteConfig) SetupRoutes() {
 func (r *RouteConfig) SetupGuestRoutes() {
 	r.App.GET("/api/up", upHandler)
 	r.App.POST("/api/login", r.AuthHandler.Login)
+	r.App.POST("/api/refresh", r.AuthHandler.RefreshToken)
 }
 
 func (r *RouteConfig) SetupAuthRoutes() {

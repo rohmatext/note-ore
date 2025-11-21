@@ -24,7 +24,7 @@ func NewUserHandler(log *logrus.Logger, userUseCase usecase.UserUseCase) *UserHa
 }
 
 func (h *UserHandler) List(ctx echo.Context) error {
-	users, err := h.UserUseCase.GetUsers(ctx.Request().Context())
+	users, err := h.UserUseCase.GetAllUsers(ctx.Request().Context())
 	if err != nil {
 		return echo.ErrInternalServerError
 	}
@@ -38,7 +38,7 @@ func (h *UserHandler) Get(ctx echo.Context) error {
 		return echo.ErrInternalServerError
 	}
 
-	user, err := h.UserUseCase.GetUser(ctx.Request().Context(), uint(id))
+	user, err := h.UserUseCase.GetUserById(ctx.Request().Context(), uint(id))
 	if err != nil {
 		return echo.ErrNotFound
 	}

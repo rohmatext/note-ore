@@ -12,3 +12,8 @@ type RefreshTokenResponse struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }
+
+type TokenPair struct {
+	AccessToken  string               `json:"access_token"`
+	RefreshToken RefreshTokenResponse `json:"refresh_token"`
+}
