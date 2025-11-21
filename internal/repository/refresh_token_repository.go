@@ -8,7 +8,7 @@ import (
 )
 
 type RefreshTokenRepository interface {
-	Create(db *gorm.DB, token *entity.RefreshToken) (*entity.RefreshToken, error)
+	Create(db *gorm.DB, token *entity.RefreshToken) error
 }
 
 type RefreshTokenRepositoryImpl struct {
@@ -21,10 +21,10 @@ func NewRefreshTokenRepository(log *logrus.Logger) RefreshTokenRepository {
 	}
 }
 
-func (r *RefreshTokenRepositoryImpl) Create(db *gorm.DB, token *entity.RefreshToken) (*entity.RefreshToken, error) {
+func (r *RefreshTokenRepositoryImpl) Create(db *gorm.DB, token *entity.RefreshToken) error {
 	if err := db.Create(token).Error; err != nil {
-		return nil, err
+		return err
 	}
 
-	return token, nil
+	return nil
 }

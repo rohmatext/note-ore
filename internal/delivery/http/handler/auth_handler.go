@@ -13,16 +13,16 @@ import (
 )
 
 type AuthHandler struct {
-	Log          *logrus.Logger
-	UserUsCase   usecase.UserUseCase
-	TokenService usecase.TokenService
+	Log                 *logrus.Logger
+	UserUseCase         usecase.UserUseCase
+	RefreshTokenUseCase usecase.RefreshTokenUseCase
 }
 
-func NewAuthHandler(log *logrus.Logger, user usecase.UserUseCase, token usecase.TokenService) *AuthHandler {
+func NewAuthHandler(log *logrus.Logger, user usecase.UserUseCase, refreshToken usecase.RefreshTokenUseCase) *AuthHandler {
 	return &AuthHandler{
-		UserUsCase:   user,
-		Log:          log,
-		TokenService: token,
+		Log:                 log,
+		UserUseCase:         user,
+		RefreshTokenUseCase: refreshToken,
 	}
 }
 
@@ -41,7 +41,7 @@ func (h *AuthHandler) Login(ctx echo.Context) (err error) {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	user, err := h.UserUsCase.Login(ctx.Request().Context(), req)
+	token, err := h.UserUseCase.Login(ctx.Request().Context(), req)
 	if err != nil {
 		h.Log.Warnf("failed to login user: %+v", err)
 		if errors.Is(err, usecase.ErrInvalidCredentials) {
@@ -56,10 +56,11 @@ func (h *AuthHandler) Login(ctx echo.Context) (err error) {
 		return err
 	}
 
-	token, err := h.TokenService.GenerateToken(user.ID)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-	}
+	cookie := new(http.Cookie)
+	cookie.Name = "_token"
+	cookie.Value = token.RefreshToken.Token
+	cookie.Expires = token.RefreshToken.ExpiresAt
+	ctx.SetCookie(cookie)
 
-	return ctx.JSON(http.StatusOK, presenter.UserLoginSuccessResponse(token))
+	return ctx.JSON(http.StatusOK, presenter.UserLoginSuccessResponse(token.AccessToken))
 }

@@ -1,6 +1,8 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
 type UserResponse struct {
 	ID        uint      `json:"id,omitempty"`
@@ -12,6 +14,11 @@ type UserResponse struct {
 
 type TokenResponse struct {
 	Token string `json:"token"`
+}
+
+type LoginOutput struct {
+	AccessToken  string               `json:"access_token"`
+	RefreshToken RefreshTokenResponse `json:"refresh_token"`
 }
 
 type LoginUserRequest struct {
