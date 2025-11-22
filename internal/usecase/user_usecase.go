@@ -87,7 +87,7 @@ func (uc *UserUseCaseImpl) Login(ctx context.Context, request *model.LoginUserRe
 
 func (uc *UserUseCaseImpl) GetUserById(ctx context.Context, id uint) (*entity.User, error) {
 	db := uc.DB.WithContext(ctx)
-	user, err := uc.UserRepository.FindById(db, id)
+	user, err := uc.UserRepository.FindById(db.Preload("Role"), id)
 	if err != nil {
 		return nil, ErrInvalidCredentials
 	}

@@ -13,6 +13,7 @@ type RouteConfig struct {
 	UserHandler    *handler.UserHandler
 	RoleHandler    *handler.RoleHandler
 	AuthMiddleware echo.MiddlewareFunc
+	RoleMiddleware func(...string) echo.MiddlewareFunc
 }
 
 func (r *RouteConfig) SetupRoutes() {
@@ -33,11 +34,11 @@ func (r *RouteConfig) SetupAuthRoutes() {
 
 	auth.GET("/api/roles", r.RoleHandler.List)
 
-	auth.GET("/api/users", r.UserHandler.List)
-	auth.GET("/api/users/:id", r.UserHandler.Get)
-	auth.POST("/api/users", r.UserHandler.Store)
-	auth.PATCH("/api/users/:id", r.UserHandler.Update)
-	auth.DELETE("/api/users/:id", r.UserHandler.Delete)
+	auth.GET("/api/users", r.UserHandler.List, r.RoleMiddleware("admin"))
+	auth.GET("/api/users/:id", r.UserHandler.Get, r.RoleMiddleware("admin"))
+	auth.POST("/api/users", r.UserHandler.Store, r.RoleMiddleware("admin"))
+	auth.PATCH("/api/users/:id", r.UserHandler.Update, r.RoleMiddleware("admin"))
+	auth.DELETE("/api/users/:id", r.UserHandler.Delete, r.RoleMiddleware("admin"))
 }
 
 func upHandler(ctx echo.Context) error {

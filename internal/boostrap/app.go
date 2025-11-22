@@ -44,6 +44,7 @@ func (cfg *BootstrapConfig) Bootstrap() *echo.Echo {
 		UserHandler:    userHandler,
 		RoleHandler:    roleHandler,
 		AuthMiddleware: middleware.AuthMiddleware(userUseCase, cfg.Config),
+		RoleMiddleware: middleware.RoleMiddleware,
 	}
 	routeConfig.SetupRoutes()
 
