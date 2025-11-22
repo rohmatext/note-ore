@@ -49,19 +49,11 @@ func (r *UserRepositoryImpl) FindById(db *gorm.DB, id uint) (*entity.User, error
 }
 
 func (r *UserRepositoryImpl) Create(db *gorm.DB, user *entity.User) error {
-	if err := db.Create(&user).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return db.Create(&user).Error
 }
 
 func (r *UserRepositoryImpl) Update(db *gorm.DB, user *entity.User) error {
-	if err := db.Save(&user).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return db.Save(&user).Error
 }
 
 func (r *UserRepositoryImpl) Delete(db *gorm.DB, id uint) error {
