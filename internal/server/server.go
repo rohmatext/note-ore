@@ -55,7 +55,11 @@ func (s *ServerConfig) GracefulShutdown(timeout time.Duration) {
 
 	// stop accepting new request & close idle connections
 	if err := s.App.Shutdown(shudownContext); err != nil {
-		s.Log.Errorf("Echo shutdown error: %v", err)
+		s.Log.Errorf("Echo shutdown error: %+v", err)
+	}
+
+	if err := s.Server.Shutdown(shudownContext); err != nil {
+		s.Log.Errorf("Server shutdown error: %+v", err)
 		_ = s.Server.Close()
 	}
 

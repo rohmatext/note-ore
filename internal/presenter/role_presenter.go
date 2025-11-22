@@ -8,10 +8,10 @@ import (
 func RolesSuccessResponse(data []*entity.Role) *ApiResponse[[]model.RoleResponse] {
 	roles := make([]model.RoleResponse, len(data))
 
-	for i, user := range data {
+	for i, role := range data {
 		roles[i] = model.RoleResponse{
-			ID:   user.ID,
-			Name: user.Name,
+			ID:   role.ID,
+			Name: role.Name,
 		}
 	}
 

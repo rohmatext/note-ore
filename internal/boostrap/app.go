@@ -29,20 +29,24 @@ func (cfg *BootstrapConfig) Bootstrap() *echo.Echo {
 	roleRepository := repository.NewRoleRepository(cfg.Log)
 	userRepository := repository.NewUserRepository(cfg.Log)
 	refreshTokenRepository := repository.NewRefreshTokenRepository(cfg.Log)
+	oreRepository := repository.NewOreRepository(cfg.Log)
 
 	roleUseCase := usecase.NewRoleUseCase(cfg.DB, cfg.Log, roleRepository)
 	userUseCase := usecase.NewUserUseCase(cfg.DB, cfg.Log, refreshTokenRepository, userRepository, roleRepository, tokenService)
 	refreshTokenUseCase := usecase.NewRefreshTokenUseCase(cfg.DB, cfg.Log, refreshTokenRepository)
+	oreUseCase := usecase.NewOreUseCase(cfg.DB, cfg.Log, oreRepository)
 
 	authHandler := handler.NewAuthHandler(cfg.Log, cookieService, userUseCase, refreshTokenUseCase)
 	userHandler := handler.NewUserHandler(cfg.Log, userUseCase)
 	roleHandler := handler.NewRoleHandler(cfg.Log, roleUseCase)
+	oreHandler := handler.NewOreHandler(cfg.Log, oreUseCase)
 
 	routeConfig := route.RouteConfig{
 		App:            cfg.App,
 		AuthHandler:    authHandler,
 		UserHandler:    userHandler,
 		RoleHandler:    roleHandler,
+		OreHandler:     oreHandler,
 		AuthMiddleware: middleware.AuthMiddleware(userUseCase, cfg.Config),
 		RoleMiddleware: middleware.RoleMiddleware,
 	}
