@@ -73,7 +73,7 @@ func (h *UserHandler) Store(ctx echo.Context) (err error) {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	return ctx.JSON(http.StatusOK, presenter.CreateUserSuccessResponse(user))
+	return ctx.JSON(http.StatusCreated, presenter.CreateUserSuccessResponse(user))
 }
 
 func (h *UserHandler) Update(ctx echo.Context) (err error) {
@@ -108,4 +108,27 @@ func (h *UserHandler) Update(ctx echo.Context) (err error) {
 	}
 
 	return ctx.JSON(http.StatusOK, presenter.UpdateUserSuccessResponse(user))
+}
+
+func (h *UserHandler) Delete(ctx echo.Context) (err error) {
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		return echo.ErrInternalServerError
+	}
+
+	user, err := h.UserUseCase.GetUserById(ctx.Request().Context(), uint(id))
+	if err != nil {
+		return echo.ErrNotFound
+	}
+
+	auth := ctx.Get("auth").(*entity.User)
+	if user.ID == auth.ID {
+		return echo.NewHTTPError(http.StatusForbidden, "Self-deletion is not allowed.")
+	}
+
+	if err := h.UserUseCase.DeleteUser(ctx.Request().Context(), uint(id)); err != nil {
+		return echo.ErrInternalServerError
+	}
+
+	return ctx.JSON(http.StatusNoContent, "")
 }

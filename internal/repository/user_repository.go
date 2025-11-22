@@ -13,6 +13,7 @@ type UserRepository interface {
 	FindByUsername(db *gorm.DB, username string) (*entity.User, error)
 	Create(db *gorm.DB, user *entity.User) error
 	Update(db *gorm.DB, user *entity.User) error
+	Delete(db *gorm.DB, id uint) error
 }
 
 type UserRepositoryImpl struct {
@@ -61,4 +62,9 @@ func (r *UserRepositoryImpl) Update(db *gorm.DB, user *entity.User) error {
 	}
 
 	return nil
+}
+
+func (r *UserRepositoryImpl) Delete(db *gorm.DB, id uint) error {
+	var user entity.User
+	return db.Where("id = ?", id).Delete(&user).Error
 }

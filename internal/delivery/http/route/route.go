@@ -37,6 +37,7 @@ func (r *RouteConfig) SetupAuthRoutes() {
 	auth.GET("/api/users/:id", r.UserHandler.Get)
 	auth.POST("/api/users", r.UserHandler.Store)
 	auth.PATCH("/api/users/:id", r.UserHandler.Update)
+	auth.DELETE("/api/users/:id", r.UserHandler.Delete)
 }
 
 func upHandler(ctx echo.Context) error {

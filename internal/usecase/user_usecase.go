@@ -22,6 +22,7 @@ type UserUseCase interface {
 	RefreshAccessToken(ctx context.Context, refreshToken string) (*model.TokenPair, error)
 	CreateOperator(ctx context.Context, request *model.CreateUserRequest) (*entity.User, error)
 	UpdateUser(ctx context.Context, request *model.UpdateUserRequest) (*entity.User, error)
+	DeleteUser(ctx context.Context, id uint) error
 }
 
 type UserUseCaseImpl struct {
@@ -228,4 +229,21 @@ func (uc *UserUseCaseImpl) UpdateUser(ctx context.Context, request *model.Update
 	}
 
 	return user, nil
+}
+
+func (uc *UserUseCaseImpl) DeleteUser(ctx context.Context, id uint) error {
+	tx := uc.DB.WithContext(ctx).Begin()
+	defer tx.Rollback()
+
+	if err := uc.UserRepository.Delete(tx, id); err != nil {
+		uc.Log.Warnf("Failed to delete user: %+v", err)
+		return err
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		uc.Log.Warnf("Failed commit transaction: %+v", err)
+		return err
+	}
+
+	return nil
 }
