@@ -20,6 +20,8 @@ type UserUseCase interface {
 	GetUserById(ctx context.Context, id uint) (*entity.User, error)
 	GetAllUsers(ctx context.Context) ([]*entity.User, error)
 	RefreshAccessToken(ctx context.Context, refreshToken string) (*model.TokenPair, error)
+	CreateOperator(ctx context.Context, request *model.CreateUserRequest) (*entity.User, error)
+	UpdateUser(ctx context.Context, request *model.UpdateUserRequest) (*entity.User, error)
 }
 
 type UserUseCaseImpl struct {
@@ -27,15 +29,17 @@ type UserUseCaseImpl struct {
 	Log                    *logrus.Logger
 	UserRepository         repository.UserRepository
 	RefreshTokenRepository repository.RefreshTokenRepository
+	RoleRepository         repository.RoleRepository
 	TokenService           TokenService
 }
 
-func NewUserUseCase(db *gorm.DB, log *logrus.Logger, refreshTokenRepo repository.RefreshTokenRepository, userRepo repository.UserRepository, token TokenService) UserUseCase {
+func NewUserUseCase(db *gorm.DB, log *logrus.Logger, refreshTokenRepo repository.RefreshTokenRepository, userRepo repository.UserRepository, roleRepo repository.RoleRepository, token TokenService) UserUseCase {
 	return &UserUseCaseImpl{
 		DB:                     db,
 		Log:                    log,
 		UserRepository:         userRepo,
 		RefreshTokenRepository: refreshTokenRepo,
+		RoleRepository:         roleRepo,
 		TokenService:           token,
 	}
 }
@@ -91,7 +95,7 @@ func (uc *UserUseCaseImpl) GetUserById(ctx context.Context, id uint) (*entity.Us
 }
 
 func (uc *UserUseCaseImpl) GetAllUsers(ctx context.Context) ([]*entity.User, error) {
-	db := uc.DB.WithContext(ctx)
+	db := uc.DB.WithContext(ctx).Preload("Role")
 	users, err := uc.UserRepository.FindAll(db)
 	if err != nil {
 		return nil, ErrInvalidCredentials
@@ -127,7 +131,7 @@ func (uc *UserUseCaseImpl) RefreshAccessToken(ctx context.Context, refreshToken 
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		uc.Log.Warnf("Failed coomit transaction: %+v", err)
+		uc.Log.Warnf("Failed commit transaction: %+v", err)
 		return nil, ErrInvalidToken
 	}
 
@@ -164,4 +168,64 @@ func (uc *UserUseCaseImpl) generateTokens(userId uint) (*string, *string, *entit
 	}
 
 	return &accessToken, &plainRefreshToken, &newRefreshToken, nil
+}
+
+func (uc *UserUseCaseImpl) CreateOperator(ctx context.Context, request *model.CreateUserRequest) (*entity.User, error) {
+	tx := uc.DB.WithContext(ctx).Begin()
+	defer tx.Rollback()
+
+	role, err := uc.RoleRepository.FindByName(tx, "operator")
+	if err != nil {
+		return nil, err
+	}
+
+	password, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+
+	user := entity.User{
+		Name:     request.Name,
+		Username: request.Username,
+		Password: string(password),
+		Role:     *role,
+	}
+
+	if err := uc.UserRepository.Create(tx, &user); err != nil {
+		uc.Log.Warnf("Failed to create user: %+v", err)
+		return nil, err
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		uc.Log.Warnf("Failed commit transaction: %+v", err)
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func (uc *UserUseCaseImpl) UpdateUser(ctx context.Context, request *model.UpdateUserRequest) (*entity.User, error) {
+	tx := uc.DB.WithContext(ctx).Begin()
+	defer tx.Rollback()
+
+	user, err := uc.UserRepository.FindById(tx, request.ID)
+	if err != nil {
+		uc.Log.Warnf("User not found: %+v", err)
+		return nil, err
+	}
+
+	user.Username = request.Username
+	user.Name = request.Name
+
+	if err := uc.UserRepository.Update(tx, user); err != nil {
+		uc.Log.Warnf("Failed to update user: %+v", err)
+		return nil, err
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		uc.Log.Warnf("Failed commit transaction: %+v", err)
+		return nil, err
+	}
+
+	return user, nil
 }

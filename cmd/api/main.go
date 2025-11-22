@@ -15,7 +15,7 @@ func main() {
 	db, err := config.NewDatabase(viperConfig, log)
 
 	app := config.NewEcho(viperConfig)
-	app.Validator = config.NewValidator()
+	app.Validator = config.NewValidator(db)
 
 	if err != nil {
 		log.Fatalf("database init failed: %v", err)

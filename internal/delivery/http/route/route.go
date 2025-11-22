@@ -11,6 +11,7 @@ type RouteConfig struct {
 	App            *echo.Echo
 	AuthHandler    *handler.AuthHandler
 	UserHandler    *handler.UserHandler
+	RoleHandler    *handler.RoleHandler
 	AuthMiddleware echo.MiddlewareFunc
 }
 
@@ -28,10 +29,14 @@ func (r *RouteConfig) SetupGuestRoutes() {
 func (r *RouteConfig) SetupAuthRoutes() {
 	auth := r.App.Group("", r.AuthMiddleware)
 
-	auth.GET("/api/me", r.AuthHandler.Me)
+	auth.GET("/api/me", r.UserHandler.Me)
+
+	auth.GET("/api/roles", r.RoleHandler.List)
 
 	auth.GET("/api/users", r.UserHandler.List)
 	auth.GET("/api/users/:id", r.UserHandler.Get)
+	auth.POST("/api/users", r.UserHandler.Store)
+	auth.PATCH("/api/users/:id", r.UserHandler.Update)
 }
 
 func upHandler(ctx echo.Context) error {

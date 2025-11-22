@@ -24,22 +24,25 @@ type BootstrapConfig struct {
 
 func (cfg *BootstrapConfig) Bootstrap() *echo.Echo {
 	tokenService := jwt.NewJWTService(cfg.Config.GetString("JWT_SECRET"))
-
 	cookieService := &dHttp.CookieService{}
 
+	roleRepository := repository.NewRoleRepository(cfg.Log)
 	userRepository := repository.NewUserRepository(cfg.Log)
 	refreshTokenRepository := repository.NewRefreshTokenRepository(cfg.Log)
 
-	userUseCase := usecase.NewUserUseCase(cfg.DB, cfg.Log, refreshTokenRepository, userRepository, tokenService)
+	roleUseCase := usecase.NewRoleUseCase(cfg.DB, cfg.Log, roleRepository)
+	userUseCase := usecase.NewUserUseCase(cfg.DB, cfg.Log, refreshTokenRepository, userRepository, roleRepository, tokenService)
 	refreshTokenUseCase := usecase.NewRefreshTokenUseCase(cfg.DB, cfg.Log, refreshTokenRepository)
 
 	authHandler := handler.NewAuthHandler(cfg.Log, cookieService, userUseCase, refreshTokenUseCase)
 	userHandler := handler.NewUserHandler(cfg.Log, userUseCase)
+	roleHandler := handler.NewRoleHandler(cfg.Log, roleUseCase)
 
 	routeConfig := route.RouteConfig{
 		App:            cfg.App,
 		AuthHandler:    authHandler,
 		UserHandler:    userHandler,
+		RoleHandler:    roleHandler,
 		AuthMiddleware: middleware.AuthMiddleware(userUseCase, cfg.Config),
 	}
 	routeConfig.SetupRoutes()

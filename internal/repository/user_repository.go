@@ -11,6 +11,8 @@ type UserRepository interface {
 	FindAll(db *gorm.DB) ([]*entity.User, error)
 	FindById(db *gorm.DB, id uint) (*entity.User, error)
 	FindByUsername(db *gorm.DB, username string) (*entity.User, error)
+	Create(db *gorm.DB, user *entity.User) error
+	Update(db *gorm.DB, user *entity.User) error
 }
 
 type UserRepositoryImpl struct {
@@ -25,7 +27,7 @@ func NewUserRepository(log *logrus.Logger) UserRepository {
 
 func (r *UserRepositoryImpl) FindAll(db *gorm.DB) ([]*entity.User, error) {
 	var users []*entity.User
-	err := db.Find(&users).Error
+	err := db.Order("created_at DESC").Find(&users).Error
 	return users, err
 }
 
@@ -43,4 +45,20 @@ func (r *UserRepositoryImpl) FindById(db *gorm.DB, id uint) (*entity.User, error
 		return nil, err
 	}
 	return &user, nil
+}
+
+func (r *UserRepositoryImpl) Create(db *gorm.DB, user *entity.User) error {
+	if err := db.Create(&user).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *UserRepositoryImpl) Update(db *gorm.DB, user *entity.User) error {
+	if err := db.Save(&user).Error; err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -15,7 +15,37 @@ func UserSuccessResponse(data *entity.User) *ApiResponse[model.UserResponse] {
 	}
 
 	return &ApiResponse[model.UserResponse]{
-		Message: "User data retrived successfully",
+		Message: "User retrived successfully",
+		Data:    user,
+	}
+}
+
+func CreateUserSuccessResponse(data *entity.User) *ApiResponse[model.UserResponse] {
+	user := model.UserResponse{
+		ID:        data.ID,
+		Name:      data.Name,
+		Username:  data.Username,
+		CreatedAt: data.CreatedAt,
+		UpdatedAt: data.UpdatedAt,
+	}
+
+	return &ApiResponse[model.UserResponse]{
+		Message: "User created successfully",
+		Data:    user,
+	}
+}
+
+func UpdateUserSuccessResponse(data *entity.User) *ApiResponse[model.UserResponse] {
+	user := model.UserResponse{
+		ID:        data.ID,
+		Name:      data.Name,
+		Username:  data.Username,
+		CreatedAt: data.CreatedAt,
+		UpdatedAt: data.UpdatedAt,
+	}
+
+	return &ApiResponse[model.UserResponse]{
+		Message: "User updated successfully",
 		Data:    user,
 	}
 }
@@ -25,16 +55,20 @@ func UsersSuccessResponse(data []*entity.User) *ApiResponse[[]model.UserResponse
 
 	for i, user := range data {
 		users[i] = model.UserResponse{
-			ID:        user.ID,
-			Name:      user.Name,
-			Username:  user.Username,
+			ID:       user.ID,
+			Name:     user.Name,
+			Username: user.Username,
+			Role: &model.RoleResponse{
+				ID:   user.Role.ID,
+				Name: user.Role.Name,
+			},
 			CreatedAt: user.CreatedAt,
 			UpdatedAt: user.UpdatedAt,
 		}
 	}
 
 	return &ApiResponse[[]model.UserResponse]{
-		Message: "User data retrived successfully",
+		Message: "Users retrived successfully",
 		Data:    users,
 	}
 }

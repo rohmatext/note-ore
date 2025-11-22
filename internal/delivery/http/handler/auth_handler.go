@@ -50,7 +50,7 @@ func (h *AuthHandler) Login(ctx echo.Context) (err error) {
 		if errors.Is(err, usecase.ErrInvalidCredentials) {
 			return ctx.JSON(http.StatusUnprocessableEntity, validator.ValidationError{
 				Message: "Validation failed",
-				Errors: echo.Map{
+				Errors: map[string]string{
 					"username": "These credentials do not match our records.",
 				},
 			})
