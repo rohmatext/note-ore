@@ -18,6 +18,7 @@ require (
 require (
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.11 // indirect
+	github.com/go-faker/faker/v4 v4.7.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
