@@ -13,6 +13,7 @@ type RouteConfig struct {
 	UserHandler    *handler.UserHandler
 	RoleHandler    *handler.RoleHandler
 	OreHandler     *handler.OreHandler
+	SourceHandler  *handler.SourceHandler
 	AuthMiddleware echo.MiddlewareFunc
 	RoleMiddleware func(...string) echo.MiddlewareFunc
 }
@@ -46,6 +47,12 @@ func (r *RouteConfig) SetupAuthRoutes() {
 	auth.POST("/api/ores", r.OreHandler.Store, r.RoleMiddleware("admin"))
 	auth.PATCH("/api/ores/:id", r.OreHandler.Update, r.RoleMiddleware("admin"))
 	auth.DELETE("/api/ores/:id", r.OreHandler.Delete, r.RoleMiddleware("admin"))
+
+	auth.GET("/api/sources", r.SourceHandler.List)
+	auth.GET("/api/sources/:id", r.SourceHandler.Show)
+	auth.POST("/api/sources", r.SourceHandler.Store)
+	auth.PATCH("/api/sources/:id", r.SourceHandler.Update)
+	auth.DELETE("/api/sources/:id", r.SourceHandler.Delete)
 }
 
 func upHandler(ctx echo.Context) error {

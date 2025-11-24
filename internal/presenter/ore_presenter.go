@@ -6,7 +6,7 @@ import (
 )
 
 func OreSuccessResponse(data *entity.Ore) *ApiResponse[model.OreResponse] {
-	user := model.OreResponse{
+	ore := model.OreResponse{
 		ID:        data.ID,
 		Name:      data.Name,
 		CreatedAt: data.CreatedAt,
@@ -15,7 +15,7 @@ func OreSuccessResponse(data *entity.Ore) *ApiResponse[model.OreResponse] {
 
 	return &ApiResponse[model.OreResponse]{
 		Message: "Ore retrived successfully",
-		Data:    user,
+		Data:    ore,
 	}
 }
 
@@ -38,7 +38,7 @@ func OresSuccessResponse(data []*entity.Ore) *ApiResponse[[]model.OreResponse] {
 }
 
 func CreateOreSuccessResponse(data *entity.Ore) *ApiResponse[model.OreResponse] {
-	user := model.OreResponse{
+	ore := model.OreResponse{
 		ID:        data.ID,
 		Name:      data.Name,
 		CreatedAt: data.CreatedAt,
@@ -47,12 +47,12 @@ func CreateOreSuccessResponse(data *entity.Ore) *ApiResponse[model.OreResponse] 
 
 	return &ApiResponse[model.OreResponse]{
 		Message: "Ore created successfully",
-		Data:    user,
+		Data:    ore,
 	}
 }
 
 func UpdateOreSuccessResponse(data *entity.Ore) *ApiResponse[model.OreResponse] {
-	user := model.OreResponse{
+	ore := model.OreResponse{
 		ID:        data.ID,
 		Name:      data.Name,
 		CreatedAt: data.CreatedAt,
@@ -61,6 +61,6 @@ func UpdateOreSuccessResponse(data *entity.Ore) *ApiResponse[model.OreResponse] 
 
 	return &ApiResponse[model.OreResponse]{
 		Message: "Ore updated successfully",
-		Data:    user,
+		Data:    ore,
 	}
 }

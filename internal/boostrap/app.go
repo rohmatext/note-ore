@@ -30,16 +30,19 @@ func (cfg *BootstrapConfig) Bootstrap() *echo.Echo {
 	userRepository := repository.NewUserRepository(cfg.Log)
 	refreshTokenRepository := repository.NewRefreshTokenRepository(cfg.Log)
 	oreRepository := repository.NewOreRepository(cfg.Log)
+	sourceRepository := repository.NewSourceRepository(cfg.Log)
 
 	roleUseCase := usecase.NewRoleUseCase(cfg.DB, cfg.Log, roleRepository)
 	userUseCase := usecase.NewUserUseCase(cfg.DB, cfg.Log, refreshTokenRepository, userRepository, roleRepository, tokenService)
 	refreshTokenUseCase := usecase.NewRefreshTokenUseCase(cfg.DB, cfg.Log, refreshTokenRepository)
 	oreUseCase := usecase.NewOreUseCase(cfg.DB, cfg.Log, oreRepository)
+	sourceUseCase := usecase.NewSourceUseCase(cfg.DB, cfg.Log, sourceRepository)
 
 	authHandler := handler.NewAuthHandler(cfg.Log, cookieService, userUseCase, refreshTokenUseCase)
 	userHandler := handler.NewUserHandler(cfg.Log, userUseCase)
 	roleHandler := handler.NewRoleHandler(cfg.Log, roleUseCase)
 	oreHandler := handler.NewOreHandler(cfg.Log, oreUseCase)
+	sourceHandler := handler.NewSourceHandler(cfg.Log, sourceUseCase)
 
 	routeConfig := route.RouteConfig{
 		App:            cfg.App,
@@ -47,6 +50,7 @@ func (cfg *BootstrapConfig) Bootstrap() *echo.Echo {
 		UserHandler:    userHandler,
 		RoleHandler:    roleHandler,
 		OreHandler:     oreHandler,
+		SourceHandler:  sourceHandler,
 		AuthMiddleware: middleware.AuthMiddleware(userUseCase, cfg.Config),
 		RoleMiddleware: middleware.RoleMiddleware,
 	}
