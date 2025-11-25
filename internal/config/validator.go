@@ -65,10 +65,51 @@ func NewValidator(db *gorm.DB) *validate.Validator {
 		return count == 0
 	})
 
+	v.RegisterValidation("exists", func(fl validator.FieldLevel) bool {
+		raw := fl.Param()
+		parts := strings.Split(raw, ".")
+		if len(parts) != 2 {
+			return false
+		}
+
+		table := parts[0]
+		column := parts[1]
+
+		var value any
+		switch fl.Field().Kind() {
+		case reflect.String:
+			value = fl.Field().String()
+		case reflect.Int, reflect.Int16, reflect.Int32, reflect.Int64:
+			value = fl.Field().Int()
+		case reflect.Uint, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			value = fl.Field().Uint()
+		default:
+			return false
+		}
+
+		var count int64
+		err := db.Table(table).
+			Where(fmt.Sprintf("%s = ?", column), value).
+			Count(&count).Error
+
+		if err != nil {
+			return false
+		}
+
+		return count > 0
+	})
+
 	v.RegisterTranslation("unique_table", trans, func(ut ut.Translator) error {
 		return ut.Add("unique_table", "{0} has already been taken.", true)
 	}, func(ut ut.Translator, fe validator.FieldError) string {
 		t, _ := ut.T("unique_table", fe.Field())
+		return t
+	})
+
+	v.RegisterTranslation("exists", trans, func(ut ut.Translator) error {
+		return ut.Add("exists", "{0} is not invalid.", true)
+	}, func(ut ut.Translator, fe validator.FieldError) string {
+		t, _ := ut.T("exists", fe.Field())
 		return t
 	})
 

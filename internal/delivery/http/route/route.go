@@ -8,14 +8,15 @@ import (
 )
 
 type RouteConfig struct {
-	App            *echo.Echo
-	AuthHandler    *handler.AuthHandler
-	UserHandler    *handler.UserHandler
-	RoleHandler    *handler.RoleHandler
-	OreHandler     *handler.OreHandler
-	SourceHandler  *handler.SourceHandler
-	AuthMiddleware echo.MiddlewareFunc
-	RoleMiddleware func(...string) echo.MiddlewareFunc
+	App               *echo.Echo
+	AuthHandler       *handler.AuthHandler
+	UserHandler       *handler.UserHandler
+	RoleHandler       *handler.RoleHandler
+	OreHandler        *handler.OreHandler
+	SourceHandler     *handler.SourceHandler
+	ProductionHandler *handler.ProductionHandler
+	AuthMiddleware    echo.MiddlewareFunc
+	RoleMiddleware    func(...string) echo.MiddlewareFunc
 }
 
 func (r *RouteConfig) SetupRoutes() {
@@ -53,6 +54,12 @@ func (r *RouteConfig) SetupAuthRoutes() {
 	auth.POST("/api/sources", r.SourceHandler.Store)
 	auth.PATCH("/api/sources/:id", r.SourceHandler.Update)
 	auth.DELETE("/api/sources/:id", r.SourceHandler.Delete)
+
+	auth.GET("/api/productions", r.ProductionHandler.List)
+	auth.GET("/api/productions/:id", r.ProductionHandler.Show)
+	auth.POST("/api/productions", r.ProductionHandler.Store)
+	auth.PATCH("/api/productions/:id", r.ProductionHandler.Update)
+	auth.DELETE("/api/productions/:id", r.ProductionHandler.Delete)
 }
 
 func upHandler(ctx echo.Context) error {

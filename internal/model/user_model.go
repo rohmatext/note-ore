@@ -9,7 +9,7 @@ type UserResponse struct {
 	Name      string        `json:"name,omitempty"`
 	Username  string        `json:"username,omitempty"`
 	Role      *RoleResponse `json:"role,omitempty"`
-	CreatedAt time.Time     `json:"created_at,"`
+	CreatedAt time.Time     `json:"created_at,omitempty"`
 	UpdatedAt time.Time     `json:"updated_at"`
 }
 

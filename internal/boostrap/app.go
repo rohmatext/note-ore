@@ -31,28 +31,32 @@ func (cfg *BootstrapConfig) Bootstrap() *echo.Echo {
 	refreshTokenRepository := repository.NewRefreshTokenRepository(cfg.Log)
 	oreRepository := repository.NewOreRepository(cfg.Log)
 	sourceRepository := repository.NewSourceRepository(cfg.Log)
+	productionRepository := repository.NewProductionRepository(cfg.Log)
 
 	roleUseCase := usecase.NewRoleUseCase(cfg.DB, cfg.Log, roleRepository)
 	userUseCase := usecase.NewUserUseCase(cfg.DB, cfg.Log, refreshTokenRepository, userRepository, roleRepository, tokenService)
 	refreshTokenUseCase := usecase.NewRefreshTokenUseCase(cfg.DB, cfg.Log, refreshTokenRepository)
 	oreUseCase := usecase.NewOreUseCase(cfg.DB, cfg.Log, oreRepository)
 	sourceUseCase := usecase.NewSourceUseCase(cfg.DB, cfg.Log, sourceRepository)
+	productionUseCase := usecase.NewProductionUseCase(cfg.DB, cfg.Log, productionRepository, userRepository, oreRepository, sourceRepository)
 
 	authHandler := handler.NewAuthHandler(cfg.Log, cookieService, userUseCase, refreshTokenUseCase)
 	userHandler := handler.NewUserHandler(cfg.Log, userUseCase)
 	roleHandler := handler.NewRoleHandler(cfg.Log, roleUseCase)
 	oreHandler := handler.NewOreHandler(cfg.Log, oreUseCase)
 	sourceHandler := handler.NewSourceHandler(cfg.Log, sourceUseCase)
+	productionHandler := handler.NewProductionHandler(cfg.Log, productionUseCase)
 
 	routeConfig := route.RouteConfig{
-		App:            cfg.App,
-		AuthHandler:    authHandler,
-		UserHandler:    userHandler,
-		RoleHandler:    roleHandler,
-		OreHandler:     oreHandler,
-		SourceHandler:  sourceHandler,
-		AuthMiddleware: middleware.AuthMiddleware(userUseCase, cfg.Config),
-		RoleMiddleware: middleware.RoleMiddleware,
+		App:               cfg.App,
+		AuthHandler:       authHandler,
+		UserHandler:       userHandler,
+		RoleHandler:       roleHandler,
+		OreHandler:        oreHandler,
+		SourceHandler:     sourceHandler,
+		ProductionHandler: productionHandler,
+		AuthMiddleware:    middleware.AuthMiddleware(userUseCase, cfg.Config),
+		RoleMiddleware:    middleware.RoleMiddleware,
 	}
 	routeConfig.SetupRoutes()
 
