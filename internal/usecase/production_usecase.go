@@ -12,6 +12,7 @@ import (
 
 type ProductionUseCase interface {
 	GetAllProductions(ctx context.Context) ([]*entity.Production, error)
+	GetProductionByMonth(ctx context.Context, year uint, month uint) ([]*entity.Production, error)
 	GetProductionById(ctx context.Context, id uint) (*entity.Production, error)
 	CreateProduction(ctx context.Context, userId uint, request *model.CreateProductionRequest) (*entity.Production, error)
 	UpdateProduction(ctx context.Context, userId uint, request *model.UpdateProductionRequest, id uint) (*entity.Production, error)
@@ -41,6 +42,11 @@ func NewProductionUseCase(db *gorm.DB, log *logrus.Logger, productionRepo reposi
 func (uc *ProductionUseCaseImpl) GetAllProductions(ctx context.Context) ([]*entity.Production, error) {
 	db := uc.DB.WithContext(ctx).Preload("User").Preload("Ore").Preload("Source")
 	return uc.ProductionRepository.FindAll(db)
+}
+
+func (uc *ProductionUseCaseImpl) GetProductionByMonth(ctx context.Context, year uint, month uint) ([]*entity.Production, error) {
+	db := uc.DB.WithContext(ctx).Preload("User").Preload("Ore").Preload("Source")
+	return uc.ProductionRepository.FindByMonth(db, year, month)
 }
 
 func (uc *ProductionUseCaseImpl) GetProductionById(ctx context.Context, id uint) (*entity.Production, error) {

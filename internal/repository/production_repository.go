@@ -9,6 +9,7 @@ import (
 
 type ProductionRepository interface {
 	FindAll(db *gorm.DB) ([]*entity.Production, error)
+	FindByMonth(db *gorm.DB, year uint, month uint) ([]*entity.Production, error)
 	FindById(db *gorm.DB, id uint) (*entity.Production, error)
 	Create(db *gorm.DB, production *entity.Production) error
 	Update(db *gorm.DB, production *entity.Production) error
@@ -28,6 +29,16 @@ func NewProductionRepository(log *logrus.Logger) ProductionRepository {
 func (r *ProductionRepositoryImpl) FindAll(db *gorm.DB) ([]*entity.Production, error) {
 	var productions []*entity.Production
 	err := db.Order("created_at DESC").Find(&productions).Error
+	return productions, err
+}
+
+func (r *ProductionRepositoryImpl) FindByMonth(db *gorm.DB, year uint, month uint) ([]*entity.Production, error) {
+	var productions []*entity.Production
+	err := db.
+		Where("EXTRACT(YEAR FROM created_at) = ?", year).
+		Where("EXTRACT(MONTH FROM created_at) = ?", month).
+		Order("created_at DESC").
+		Find(&productions).Error
 	return productions, err
 }
 

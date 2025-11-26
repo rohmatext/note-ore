@@ -8,6 +8,7 @@ import (
 	"rohmatext/ore-note/internal/presenter"
 	"rohmatext/ore-note/internal/usecase"
 	"strconv"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
@@ -27,6 +28,23 @@ func NewProductionHandler(log *logrus.Logger, productionUC usecase.ProductionUse
 
 func (h *ProductionHandler) List(ctx echo.Context) error {
 	productions, err := h.ProductionUseCase.GetAllProductions(ctx.Request().Context())
+	if err != nil {
+		return echo.ErrInternalServerError
+	}
+
+	return ctx.JSON(http.StatusOK, presenter.ProductionsSuccessResponse(productions))
+}
+
+func (h *ProductionHandler) MonthlyList(ctx echo.Context) error {
+	month, err := strconv.Atoi(ctx.QueryParam("month"))
+	if err != nil || month == 0 {
+		month = int(time.Now().Month())
+	}
+	year, err := strconv.Atoi(ctx.QueryParam("year"))
+	if err != nil || year == 0 {
+		year = time.Now().Year()
+	}
+	productions, err := h.ProductionUseCase.GetProductionByMonth(ctx.Request().Context(), uint(year), uint(month))
 	if err != nil {
 		return echo.ErrInternalServerError
 	}

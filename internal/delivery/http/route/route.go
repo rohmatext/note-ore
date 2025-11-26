@@ -56,6 +56,7 @@ func (r *RouteConfig) SetupAuthRoutes() {
 	auth.DELETE("/api/sources/:id", r.SourceHandler.Delete)
 
 	auth.GET("/api/productions", r.ProductionHandler.List)
+	auth.GET("/api/productions/month", r.ProductionHandler.MonthlyList)
 	auth.GET("/api/productions/:id", r.ProductionHandler.Show)
 	auth.POST("/api/productions", r.ProductionHandler.Store)
 	auth.PATCH("/api/productions/:id", r.ProductionHandler.Update)
