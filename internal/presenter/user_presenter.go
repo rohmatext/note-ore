@@ -7,9 +7,13 @@ import (
 
 func UserSuccessResponse(data *entity.User) *ApiResponse[model.UserResponse] {
 	user := model.UserResponse{
-		ID:        data.ID,
-		Name:      data.Name,
-		Username:  data.Username,
+		ID:       data.ID,
+		Name:     data.Name,
+		Username: data.Username,
+		Role: &model.RoleResponse{
+			ID:   data.Role.ID,
+			Name: data.Role.Name,
+		},
 		CreatedAt: data.CreatedAt,
 		UpdatedAt: data.UpdatedAt,
 	}
