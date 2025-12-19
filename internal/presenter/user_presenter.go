@@ -54,7 +54,7 @@ func UpdateUserSuccessResponse(data *entity.User) *ApiResponse[model.UserRespons
 	}
 }
 
-func UsersSuccessResponse(data []*entity.User) *ApiResponse[[]model.UserResponse] {
+func UsersSuccessResponse(data []*entity.User, cursor *string) *ApiResponse[[]model.UserResponse] {
 	users := make([]model.UserResponse, len(data))
 
 	for i, user := range data {
@@ -74,6 +74,9 @@ func UsersSuccessResponse(data []*entity.User) *ApiResponse[[]model.UserResponse
 	return &ApiResponse[[]model.UserResponse]{
 		Message: "Users retrived successfully",
 		Data:    users,
+		Meta: &PageMeta{
+			Cursor: cursor,
+		},
 	}
 }
 

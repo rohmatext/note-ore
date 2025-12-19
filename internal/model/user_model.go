@@ -2,6 +2,8 @@ package model
 
 import (
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type UserResponse struct {
@@ -32,4 +34,15 @@ type UpdateUserRequest struct {
 	ID       uint   `json:"id"`
 	Name     string `json:"name" validate:"required,max=100"`
 	Username string `json:"username" validate:"required,unique_table=users.username,max=50"`
+}
+
+func UserCursorPaginate(limit int, cursorID uint) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		db = db.Limit(limit + 1).Order("id DESC")
+		if cursorID != 0 {
+			db = db.Where("id <= ?", cursorID)
+		}
+
+		return db
+	}
 }

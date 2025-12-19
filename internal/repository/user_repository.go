@@ -2,6 +2,7 @@ package repository
 
 import (
 	"rohmatext/ore-note/internal/entity"
+	"rohmatext/ore-note/internal/model"
 
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -9,6 +10,7 @@ import (
 
 type UserRepository interface {
 	FindAll(db *gorm.DB) ([]*entity.User, error)
+	FindPaginated(db *gorm.DB, limit int, cursorID uint) ([]*entity.User, uint, error)
 	FindById(db *gorm.DB, id uint) (*entity.User, error)
 	FindByUsername(db *gorm.DB, username string) (*entity.User, error)
 	Create(db *gorm.DB, user *entity.User) error
@@ -30,6 +32,19 @@ func (r *UserRepositoryImpl) FindAll(db *gorm.DB) ([]*entity.User, error) {
 	var users []*entity.User
 	err := db.Order("created_at DESC").Find(&users).Error
 	return users, err
+}
+
+func (r *UserRepositoryImpl) FindPaginated(db *gorm.DB, limit int, cursorID uint) ([]*entity.User, uint, error) {
+	var users []*entity.User
+	err := db.Scopes(model.UserCursorPaginate(limit, cursorID)).Find(&users).Error
+
+	var nextCursor uint = 0
+	if len(users) > limit {
+		nextCursor = users[limit].ID
+		users = users[:limit]
+	}
+
+	return users, nextCursor, err
 }
 
 func (r *UserRepositoryImpl) FindByUsername(db *gorm.DB, username string) (*entity.User, error) {

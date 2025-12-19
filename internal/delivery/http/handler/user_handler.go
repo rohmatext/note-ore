@@ -26,12 +26,13 @@ func NewUserHandler(log *logrus.Logger, userUseCase usecase.UserUseCase) *UserHa
 }
 
 func (h *UserHandler) List(ctx echo.Context) error {
-	users, err := h.UserUseCase.GetAllUsers(ctx.Request().Context())
+	cursor := ctx.QueryParam("cursor")
+	users, nextCursor, err := h.UserUseCase.GetUsersPaginated(ctx.Request().Context(), 20, cursor)
 	if err != nil {
 		return echo.ErrInternalServerError
 	}
 
-	return ctx.JSON(http.StatusOK, presenter.UsersSuccessResponse(users))
+	return ctx.JSON(http.StatusOK, presenter.UsersSuccessResponse(users, nextCursor))
 }
 
 func (h *UserHandler) Get(ctx echo.Context) error {

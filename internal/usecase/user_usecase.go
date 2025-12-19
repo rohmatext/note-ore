@@ -7,7 +7,9 @@ import (
 	"rohmatext/ore-note/internal/entity"
 	"rohmatext/ore-note/internal/model"
 	"rohmatext/ore-note/internal/repository"
+	"rohmatext/ore-note/internal/utils/crypto"
 	"rohmatext/ore-note/internal/utils/stringx"
+	"strconv"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -18,6 +20,7 @@ import (
 type UserUseCase interface {
 	Login(ctx context.Context, request *model.LoginUserRequest) (*model.TokenPair, error)
 	GetUserById(ctx context.Context, id uint) (*entity.User, error)
+	GetUsersPaginated(ctx context.Context, limit int, cursor string) ([]*entity.User, *string, error)
 	GetAllUsers(ctx context.Context) ([]*entity.User, error)
 	RefreshAccessToken(ctx context.Context, refreshToken string) (*model.TokenPair, error)
 	CreateOperator(ctx context.Context, request *model.CreateUserRequest) (*entity.User, error)
@@ -28,16 +31,18 @@ type UserUseCase interface {
 type UserUseCaseImpl struct {
 	DB                     *gorm.DB
 	Log                    *logrus.Logger
+	Crypto                 *crypto.Crypto
 	UserRepository         repository.UserRepository
 	RefreshTokenRepository repository.RefreshTokenRepository
 	RoleRepository         repository.RoleRepository
 	TokenService           TokenService
 }
 
-func NewUserUseCase(db *gorm.DB, log *logrus.Logger, refreshTokenRepo repository.RefreshTokenRepository, userRepo repository.UserRepository, roleRepo repository.RoleRepository, token TokenService) UserUseCase {
+func NewUserUseCase(db *gorm.DB, log *logrus.Logger, refreshTokenRepo repository.RefreshTokenRepository, userRepo repository.UserRepository, roleRepo repository.RoleRepository, token TokenService, crypto *crypto.Crypto) UserUseCase {
 	return &UserUseCaseImpl{
 		DB:                     db,
 		Log:                    log,
+		Crypto:                 crypto,
 		UserRepository:         userRepo,
 		RefreshTokenRepository: refreshTokenRepo,
 		RoleRepository:         roleRepo,
@@ -103,6 +108,40 @@ func (uc *UserUseCaseImpl) GetAllUsers(ctx context.Context) ([]*entity.User, err
 	}
 
 	return users, nil
+}
+
+func (uc *UserUseCaseImpl) GetUsersPaginated(ctx context.Context, limit int, cursor string) ([]*entity.User, *string, error) {
+	db := uc.DB.WithContext(ctx).Preload("Role")
+
+	cursorID := 0
+	if cursor != "" {
+		plaintext, err := uc.Crypto.Decrypt(cursor)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		cursorID, err = strconv.Atoi(plaintext)
+		if err != nil {
+			return nil, nil, err
+		}
+	}
+
+	users, nextID, err := uc.UserRepository.FindPaginated(db, limit, uint(cursorID))
+	if err != nil {
+		return nil, nil, ErrInvalidCredentials
+	}
+
+	if nextID == 0 {
+		return users, nil, nil
+	}
+
+	cursorStr := strconv.Itoa(int(nextID))
+	nextCursor, err := uc.Crypto.Encrypt(cursorStr)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return users, &nextCursor, nil
 }
 
 func (uc *UserUseCaseImpl) RefreshAccessToken(ctx context.Context, refreshToken string) (*model.TokenPair, error) {

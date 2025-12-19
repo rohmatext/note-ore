@@ -8,6 +8,7 @@ import (
 	"rohmatext/ore-note/internal/infrastructure/jwt"
 	"rohmatext/ore-note/internal/repository"
 	"rohmatext/ore-note/internal/usecase"
+	"rohmatext/ore-note/internal/utils/crypto"
 
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
@@ -25,6 +26,7 @@ type BootstrapConfig struct {
 func (cfg *BootstrapConfig) Bootstrap() *echo.Echo {
 	tokenService := jwt.NewJWTService(cfg.Config.GetString("JWT_SECRET"))
 	cookieService := &dHttp.CookieService{}
+	cryptox := crypto.NewCrypto(cfg.Config.GetString("APP_KEY"))
 
 	roleRepository := repository.NewRoleRepository(cfg.Log)
 	userRepository := repository.NewUserRepository(cfg.Log)
@@ -34,7 +36,7 @@ func (cfg *BootstrapConfig) Bootstrap() *echo.Echo {
 	productionRepository := repository.NewProductionRepository(cfg.Log)
 
 	roleUseCase := usecase.NewRoleUseCase(cfg.DB, cfg.Log, roleRepository)
-	userUseCase := usecase.NewUserUseCase(cfg.DB, cfg.Log, refreshTokenRepository, userRepository, roleRepository, tokenService)
+	userUseCase := usecase.NewUserUseCase(cfg.DB, cfg.Log, refreshTokenRepository, userRepository, roleRepository, tokenService, cryptox)
 	refreshTokenUseCase := usecase.NewRefreshTokenUseCase(cfg.DB, cfg.Log, refreshTokenRepository)
 	oreUseCase := usecase.NewOreUseCase(cfg.DB, cfg.Log, oreRepository)
 	sourceUseCase := usecase.NewSourceUseCase(cfg.DB, cfg.Log, sourceRepository)
